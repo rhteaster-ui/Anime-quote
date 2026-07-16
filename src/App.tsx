@@ -189,7 +189,7 @@ const BACKGROUNDS: Record<number, BackgroundConfig> = {
     usernameFontSize: 28,
     textColor: '#111111',
     accentColor: '#ec4899',
-    defaultQuote: 'Menemukan kedamaian dalam kesunyian adalah berkah terbaik yang bisa kita miliki.',
+    defaultQuote: 'Temukan aku di duniamu.',
     defaultAuthor: '- Elina',
     avatarUrl: 'https://cdn.jsdelivr.net/gh/Ditzzx-vibecoder/Assets@main/Image/elina.png'
   },
