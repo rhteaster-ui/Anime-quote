@@ -1,0 +1,6 @@
+{
+  "name": "Quote Anime Canvas Generator",
+  "description": "Aplikasi pembuat quote anime estetis dengan pilihan background karakter populer dan download gambar instan.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
