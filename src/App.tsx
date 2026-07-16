@@ -832,7 +832,7 @@ export default function App() {
                 referrerPolicy="no-referrer"
                 onError={(e) => {
                   // Fallback to high quality external link avatar if local server image not ready
-                  (e.target as HTMLImageElement).src = 'https://cdn.jsdelivr.net/gh/Ditzzx-vibecoder/Assets@main/Image/elina.png';
+                  (e.target as HTMLImageElement).src = 'https://www.rhmt.biz.id/gambar/pp-dev.png';
                 }}
                 className="w-14 h-14 rounded-full border-2 border-emerald-500/40 object-cover shadow-lg"
               />
