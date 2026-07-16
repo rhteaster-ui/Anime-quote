@@ -9,8 +9,11 @@ import {
   AlignRight, 
   AlignJustify, 
   ArrowRight,
-  ExternalLink
+  ExternalLink,
+  Smartphone,
+  Plus
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 
 // Authentic SVG Icons as requested by the user
 const WhatsAppIcon = ({ className = "h-5 w-5" }: { className?: string }) => (
@@ -341,12 +344,52 @@ export default function App() {
   const [forceRedraw, setForceRedraw] = useState<number>(0);
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
+  // Splashscreen state
+  const [showSplash, setShowSplash] = useState<boolean>(true);
+
+  // PWA Install Prompt state
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isInstallable, setIsInstallable] = useState<boolean>(false);
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imagesCacheRef = useRef<Record<string, HTMLImageElement>>({});
 
   const triggerNotification = (message: string, type: 'success' | 'error' = 'success') => {
     setNotification({ message, type });
     setTimeout(() => setNotification(null), 3000);
+  };
+
+  // Splashscreen timer (2.5 seconds)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Capture PWA Install Prompt
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setIsInstallable(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  const handleInstallPWA = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log(`PWA Install Choice Outcome: ${outcome}`);
+    setDeferredPrompt(null);
+    setIsInstallable(false);
+    triggerNotification('Terima kasih telah menambahkan Quotes Editor ke beranda!', 'success');
   };
 
   // Load ARIALN font on mount
@@ -508,33 +551,119 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans flex flex-col selection:bg-slate-200 selection:text-slate-900">
-      
-      {/* Dynamic Pop-up Alert */}
-      {notification && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 w-full max-w-sm">
-          <div className={`p-3 rounded-lg shadow-xl border text-center text-xs font-medium ${
-            notification.type === 'success' 
-              ? 'bg-white border-emerald-200 text-emerald-600' 
-              : 'bg-white border-rose-200 text-rose-600'
-          }`}>
-            {notification.message}
-          </div>
-        </div>
-      )}
+    <>
+      {/* Animated Splash Screen */}
+      <AnimatePresence mode="wait">
+        {showSplash && (
+          <motion.div
+            key="splash"
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0, y: -20, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } }}
+            className="fixed inset-0 bg-[#0f172a] z-50 flex flex-col items-center justify-center p-4 select-none"
+          >
+            <div className="text-center flex flex-col items-center max-w-sm w-full">
+              {/* Pulsing Avatar Container with Emerald Border Glow */}
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ 
+                  scale: 1, 
+                  opacity: 1,
+                  transition: { delay: 0.2, duration: 0.8, type: 'spring', stiffness: 100 }
+                }}
+                className="relative mb-6"
+              >
+                {/* Glowing Outer Rings */}
+                <div className="absolute -inset-4 rounded-full bg-emerald-500/10 blur-xl animate-pulse" />
+                <motion.div 
+                  animate={{ rotate: 360 }}
+                  transition={{ repeat: Infinity, duration: 10, ease: 'linear' }}
+                  className="absolute -inset-2 rounded-full border-2 border-dashed border-emerald-500/30"
+                />
+                
+                <img 
+                  src="/images.jpeg" 
+                  alt="App Icon" 
+                  className="w-24 h-24 rounded-full object-cover border-4 border-[#1e293b] shadow-2xl relative z-10"
+                />
+              </motion.div>
 
-      {/* Main Top Studio Area - Clean Pure White (Minimal Elements) */}
-      <div className="flex-1 max-w-4xl mx-auto w-full px-4 py-8 flex flex-col items-center">
+              {/* Developer Signature Branding */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0, transition: { delay: 0.5, duration: 0.5 } }}
+                className="mb-2"
+              >
+                <span className="text-emerald-400 font-bold tracking-wider text-xs block px-4 py-1.5 rounded-full bg-emerald-950/40 border border-emerald-800/40 font-mono shadow-[0_0_15px_rgba(16,185,129,0.1)]">
+                  ✧･ﾟ: [𝙍]𝙝𝙢𝙏 | 𝘾𝙤𝙙𝙚⚙️𝘼𝙄 𝙡 :･ﾟ✧
+                </span>
+              </motion.div>
+
+              {/* App Title */}
+              <motion.h1
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0, transition: { delay: 0.7, duration: 0.5 } }}
+                className="text-2xl font-black tracking-tight text-white mt-2 font-display"
+              >
+                Quotes Editor Anime
+              </motion.h1>
+
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1, transition: { delay: 0.9, duration: 0.5 } }}
+                className="text-[10px] font-mono text-slate-400 mt-2"
+              >
+                Rendering Engine v1.0.0
+              </motion.p>
+
+              {/* Cool Minimalist Glowing Loading bar */}
+              <div className="w-48 h-1 bg-slate-800 rounded-full mt-8 overflow-hidden relative">
+                <motion.div 
+                  initial={{ left: '-100%' }}
+                  animate={{ left: '100%' }}
+                  transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
+                  className="absolute inset-y-0 w-1/2 bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_8px_#34d399]"
+                />
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="min-h-screen bg-slate-50 text-slate-800 font-sans flex flex-col selection:bg-slate-200 selection:text-slate-900">
         
-        {/* Title / Brand Header */}
-        <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold tracking-tight text-slate-950 font-display">
-            Quotes Editor
-          </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Dibuat secara instan, estetis, dan ringan dengan teknologi pemrosesan langsung di browser.
-          </p>
-        </div>
+        {/* Dynamic Pop-up Alert */}
+        {notification && (
+          <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 w-full max-w-sm">
+            <div className={`p-3 rounded-lg shadow-xl border text-center text-xs font-medium ${
+              notification.type === 'success' 
+                ? 'bg-white border-emerald-200 text-emerald-600' 
+                : 'bg-white border-rose-200 text-rose-600'
+            }`}>
+              {notification.message}
+            </div>
+          </div>
+        )}
+
+        {/* Main Top Studio Area - Clean Pure White (Minimal Elements) */}
+        <div className="flex-1 max-w-4xl mx-auto w-full px-4 py-8 flex flex-col items-center">
+          
+          {/* Title / Brand Header */}
+          <div className="text-center mb-6 flex flex-col items-center">
+            {isInstallable && (
+              <button
+                onClick={handleInstallPWA}
+                className="mb-4 flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 text-emerald-600 hover:text-emerald-500 text-[11px] font-bold shadow-sm transition-all duration-300 cursor-pointer animate-pulse"
+              >
+                <Smartphone className="h-3.5 w-3.5" /> Pasang Aplikasi (PWA)
+              </button>
+            )}
+            <h1 className="text-2xl font-bold tracking-tight text-slate-950 font-display">
+              Quotes Editor
+            </h1>
+            <p className="text-xs text-slate-400 mt-1">
+              Dibuat secara instan, estetis, dan ringan dengan teknologi pemrosesan langsung di browser.
+            </p>
+          </div>
 
         {/* Smartphone-like Polaroid Canvas Preview Container */}
         <div className="relative w-full max-w-[380px] aspect-square rounded-2xl overflow-hidden bg-white shadow-xl border border-slate-100 flex items-center justify-center">
@@ -796,5 +925,6 @@ export default function App() {
       </footer>
 
     </div>
+    </>
   );
 }
